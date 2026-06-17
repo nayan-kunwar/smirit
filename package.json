@@ -1,0 +1,49 @@
+{
+  "name": "@smriti/source",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Memory Service - an Nx + pnpm monorepo providing durable, queryable long-term memory for AI agents.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "build": "nx run-many -t build",
+    "typecheck": "nx run-many -t typecheck",
+    "lint": "nx run-many -t lint",
+    "test": "nx run-many -t test",
+    "graph": "nx graph",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "infra:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "db:migrate": "nx run @smriti/postgres:migrate",
+    "dev:api": "pnpm -C apps/api dev",
+    "dev:embedding-worker": "pnpm -C apps/embedding-worker dev",
+    "dev:importance-worker": "pnpm -C apps/importance-worker dev",
+    "dev:summarizer-worker": "pnpm -C apps/summarizer-worker dev",
+    "dev:consolidation-worker": "pnpm -C apps/consolidation-worker dev",
+    "dev:profile-worker": "pnpm -C apps/profile-worker dev",
+    "dev:scheduler": "pnpm -C apps/scheduler dev",
+    "dev:workers": "concurrently -n embedding,importance,summarizer,consolidation,profile,scheduler -c blue,green,yellow,magenta,cyan,white \"pnpm dev:embedding-worker\" \"pnpm dev:importance-worker\" \"pnpm dev:summarizer-worker\" \"pnpm dev:consolidation-worker\" \"pnpm dev:profile-worker\" \"pnpm dev:scheduler\""
+  },
+  "devDependencies": {
+    "@nx/eslint": "^20.3.0",
+    "@nx/eslint-plugin": "^20.3.0",
+    "@nx/js": "^20.3.0",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "esbuild": "^0.24.2",
+    "concurrently": "^9.1.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "nx": "^20.3.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^2.1.8"
+  }
+}

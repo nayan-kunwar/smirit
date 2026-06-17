@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "sourceMap": true,
+    "composite": false,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@smriti/auth": ["libs/auth/src/index.ts"],
+      "@smriti/config": ["libs/config/src/index.ts"],
+      "@smriti/embedding": ["libs/embedding/src/index.ts"],
+      "@smriti/events": ["libs/events/src/index.ts"],
+      "@smriti/kafka": ["libs/kafka/src/index.ts"],
+      "@smriti/memory-core": ["libs/memory-core/src/index.ts"],
+      "@smriti/observability": ["libs/observability/src/index.ts"],
+      "@smriti/postgres": ["libs/postgres/src/index.ts"],
+      "@smriti/ranking": ["libs/ranking/src/index.ts"],
+      "@smriti/redis": ["libs/redis/src/index.ts"],
+      "@smriti/retrieval-core": ["libs/retrieval-core/src/index.ts"],
+      "@smriti/shared-types": ["libs/shared-types/src/index.ts"],
+      "@smriti/testing": ["libs/testing/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp", "dist"]
+}

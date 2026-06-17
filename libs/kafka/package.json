@@ -1,0 +1,24 @@
+{
+  "name": "@smriti/kafka",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@smriti/events": "workspace:*",
+    "@smriti/observability": "workspace:*",
+    "kafkajs": "^2.2.4",
+    "uuid": "^11.0.3"
+  },
+  "nx": {
+    "tags": [
+      "type:infra"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+packages:
+  - 'apps/*'
+  - 'libs/*'
+
+strictDepBuilds: false
+
+onlyBuiltDependencies:
+  - esbuild
+  - nx
+  - '@nestjs/core'
+  - protobufjs
+allowBuilds:
+  '@nestjs/core': set this to true or false
+  esbuild: set this to true or false
+  nx: set this to true or false
+  protobufjs: set this to true or false

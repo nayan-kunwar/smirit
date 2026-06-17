@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'smriti'
+    orgId: 1
+    folder: 'Smriti'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

@@ -1,0 +1,22 @@
+{
+  "name": "@smriti/retrieval-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@smriti/ranking": "workspace:*",
+    "@smriti/shared-types": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "type:domain"
+    ]
+  }
+}

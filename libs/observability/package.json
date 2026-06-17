@@ -1,0 +1,27 @@
+{
+  "name": "@smriti/observability",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.55.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
+    "@opentelemetry/resources": "^1.30.0",
+    "@opentelemetry/sdk-node": "^0.57.0",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "pino": "^9.5.0",
+    "prom-client": "^15.1.3"
+  },
+  "nx": {
+    "tags": [
+      "type:cross"
+    ]
+  }
+}

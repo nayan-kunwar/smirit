@@ -1,0 +1,29 @@
+{
+  "name": "@smriti/summarizer-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/main.js --packages=external --tsconfig=tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@smriti/config": "workspace:*",
+    "@smriti/events": "workspace:*",
+    "@smriti/kafka": "workspace:*",
+    "@smriti/memory-core": "workspace:*",
+    "@smriti/observability": "workspace:*",
+    "@smriti/postgres": "workspace:*",
+    "@smriti/shared-types": "workspace:*",
+    "uuid": "^11.0.3"
+  },
+  "nx": {
+    "tags": [
+      "type:app"
+    ]
+  }
+}
