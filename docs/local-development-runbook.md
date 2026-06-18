@@ -301,6 +301,7 @@ Retrieval (`POST /memories/context`) is **synchronous** and never goes through K
 
 See also:
 
+- [deployment-strategy.md](deployment-strategy.md)
 - [ai-memory-service-architecture.md](architecture/ai-memory-service-architecture.md)
 - [database-design.md](architecture/database-design.md)
 - [event-driven-design.md](architecture/event-driven-design.md)

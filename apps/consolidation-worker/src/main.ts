@@ -30,7 +30,7 @@ async function main(): Promise<void> {
   const embeddings = new PostgresEmbeddingRepository(db);
   const processed = new PostgresProcessedEventsRepository(db);
 
-  const kafka = createKafka({ brokers: config.kafka.brokers, clientId: config.kafka.clientId });
+  const kafka = createKafka(config.kafka);
   const producer = new KafkaProducer(kafka);
 
   const runtime = new ConsumerRuntime<ScheduleConsolidateEvent>({

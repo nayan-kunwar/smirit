@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   const processed = new PostgresProcessedEventsRepository(db);
   const llm = config.llm.provider === 'mock' ? null : createLlmProvider(config.llm);
 
-  const kafka = createKafka({ brokers: config.kafka.brokers, clientId: config.kafka.clientId });
+  const kafka = createKafka(config.kafka);
   const producer = new KafkaProducer(kafka);
 
   const runtime = new ConsumerRuntime<ScheduleSummarizeEvent>({

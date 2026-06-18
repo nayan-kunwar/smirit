@@ -12,7 +12,30 @@ describe('loadConfig', () => {
     const config = loadConfig(base as NodeJS.ProcessEnv);
     expect(config.http.port).toBe(3000);
     expect(config.kafka.brokers).toEqual(['localhost:9092', 'localhost:9093']);
+    expect(config.kafka.ssl).toBe(false);
+    expect(config.kafka.sasl).toBeUndefined();
     expect(config.embedding.provider).toBe('mock');
+  });
+
+  it('parses managed Kafka SASL settings and auto-enables SSL', () => {
+    const config = loadConfig({
+      ...base,
+      KAFKA_SSL: 'false',
+      KAFKA_SASL_USERNAME: 'smriti',
+      KAFKA_SASL_PASSWORD: 'secret',
+    } as NodeJS.ProcessEnv);
+    expect(config.kafka.ssl).toBe(true);
+    expect(config.kafka.sasl).toEqual({
+      mechanism: 'scram-sha-256',
+      username: 'smriti',
+      password: 'secret',
+    });
+  });
+
+  it('requires both SASL username and password', () => {
+    expect(() =>
+      loadConfig({ ...base, KAFKA_SASL_USERNAME: 'smriti' } as NodeJS.ProcessEnv),
+    ).toThrow(/KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD/);
   });
 
   it('throws on missing required values', () => {

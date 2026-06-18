@@ -17,7 +17,7 @@ async function main(): Promise<void> {
   const memories = new PostgresMemoryRepository(db);
   const users = new PostgresUserRepository(db);
 
-  const kafka = createKafka({ brokers: config.kafka.brokers, clientId: config.kafka.clientId });
+  const kafka = createKafka(config.kafka);
   const producer = new KafkaProducer(kafka);
   await producer.connect();
 

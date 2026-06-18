@@ -20,6 +20,10 @@ const envSchema = z.object({
   KAFKA_BROKERS: z.string().min(1),
   KAFKA_CLIENT_ID: z.string().default('smriti'),
   KAFKA_GROUP_ID: z.string().default('smriti-workers'),
+  KAFKA_SSL: z.coerce.boolean().default(false),
+  KAFKA_SASL_MECHANISM: z.enum(['scram-sha-256', 'plain']).default('scram-sha-256'),
+  KAFKA_SASL_USERNAME: z.string().optional(),
+  KAFKA_SASL_PASSWORD: z.string().optional(),
 
   EMBEDDING_PROVIDER: z.enum(['openai', 'mock']).default('mock'),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
@@ -55,7 +59,13 @@ export interface AppConfig {
   http: { host: string; port: number };
   postgres: { url: string; poolSize: number };
   redis: { url: string };
-  kafka: { brokers: string[]; clientId: string; groupId: string };
+  kafka: {
+    brokers: string[];
+    clientId: string;
+    groupId: string;
+    ssl: boolean;
+    sasl?: { mechanism: 'scram-sha-256' | 'plain'; username: string; password: string };
+  };
   embedding: {
     provider: RawEnv['EMBEDDING_PROVIDER'];
     model: string;
@@ -108,6 +118,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('API_KEY is required when NODE_ENV=production');
   }
 
+  const hasSaslUsername = Boolean(e.KAFKA_SASL_USERNAME);
+  const hasSaslPassword = Boolean(e.KAFKA_SASL_PASSWORD);
+  if (hasSaslUsername !== hasSaslPassword) {
+    throw new Error(
+      'KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when using SASL authentication',
+    );
+  }
+
+  const sasl = hasSaslUsername
+    ? {
+        mechanism: e.KAFKA_SASL_MECHANISM,
+        username: e.KAFKA_SASL_USERNAME as string,
+        password: e.KAFKA_SASL_PASSWORD as string,
+      }
+    : undefined;
+
   return {
     nodeEnv: e.NODE_ENV,
     http: { host: e.HTTP_HOST, port: e.HTTP_PORT },
@@ -117,6 +143,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       brokers: csv(e.KAFKA_BROKERS),
       clientId: e.KAFKA_CLIENT_ID,
       groupId: e.KAFKA_GROUP_ID,
+      ssl: e.KAFKA_SSL || Boolean(sasl),
+      sasl,
     },
     embedding: {
       provider: e.EMBEDDING_PROVIDER,

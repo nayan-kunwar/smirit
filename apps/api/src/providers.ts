@@ -61,9 +61,7 @@ export function buildProviders(): Provider[] {
       provide: TOKENS.KafkaProducer,
       inject: [TOKENS.Config],
       useFactory: (config: AppConfig) =>
-        new KafkaProducer(
-          createKafka({ brokers: config.kafka.brokers, clientId: config.kafka.clientId }),
-        ),
+        new KafkaProducer(createKafka(config.kafka)),
     },
     {
       provide: TOKENS.EmbeddingProvider,

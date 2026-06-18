@@ -3,9 +3,20 @@
  * E2E smoke: create user → create memory → poll until active → retrieve context.
  * Requires API + workers + infra running locally.
  *
- * Usage: node scripts/e2e-smoke.mjs
+ * Usage:
+ *   node scripts/e2e-smoke.mjs
+ *   API_URL=https://api.example.com API_KEY=secret node scripts/e2e-smoke.mjs
  */
 const API = process.env.API_URL ?? 'http://localhost:3000';
+const API_KEY = process.env.API_KEY;
+
+function authHeaders(extra = {}) {
+  const headers = { ...extra };
+  if (API_KEY) {
+    headers['x-api-key'] = API_KEY;
+  }
+  return headers;
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API}${path}`, options);
@@ -29,10 +40,10 @@ async function main() {
   });
 
   const userId = user.user.id;
-  const headers = {
+  const headers = authHeaders({
     'content-type': 'application/json',
     'x-user-id': userId,
-  };
+  });
 
   const created = await request('/memories', {
     method: 'POST',

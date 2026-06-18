@@ -1,0 +1,58 @@
+# Production app tier — pull pre-built GHCR images (no local build).
+# Requires managed Postgres, Redis, and Kafka (see env.prod.example).
+#
+# Usage:
+#   cp env.prod.example .env.prod   # fill in secrets
+#   export IMAGE_REGISTRY=ghcr.io/<owner>/smriti
+#   export IMAGE_TAG=latest         # or a git SHA from CI
+#   docker compose -f infra/deploy/docker-compose.prod.yml up -d
+
+name: smriti-prod
+
+services:
+  api:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-api:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    environment:
+      HTTP_HOST: 0.0.0.0
+      HTTP_PORT: 3000
+    ports:
+      - '${API_PORT:-3000}:3000'
+    restart: unless-stopped
+
+  embedding-worker:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-embedding-worker:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  importance-worker:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-importance-worker:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  summarizer-worker:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-summarizer-worker:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  consolidation-worker:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-consolidation-worker:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  profile-worker:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-profile-worker:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  scheduler:
+    image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}-scheduler:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.prod
+    restart: unless-stopped

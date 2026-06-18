@@ -1,0 +1,174 @@
+name: Deploy
+
+on:
+  # Publish images after CI passes on main.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+  # Manual release: build → migrate → optional deploy → optional smoke.
+  workflow_dispatch:
+    inputs:
+      run_migrate:
+        description: Run database migrations against POSTGRES_URL secret
+        type: boolean
+        default: true
+      deploy_target:
+        description: Host to redeploy (images must already point at GHCR)
+        type: choice
+        options:
+          - none
+          - railway
+        default: none
+      run_smoke:
+        description: Run e2e smoke test against API_URL secret
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  WORKERS: >-
+    embedding-worker,
+    importance-worker,
+    summarizer-worker,
+    consolidation-worker,
+    profile-worker,
+    scheduler
+
+jobs:
+  publish-images:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    outputs:
+      image_prefix: ${{ steps.meta.outputs.image_prefix }}
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Resolve image coordinates
+        id: meta
+        run: |
+          owner_lc="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          prefix="ghcr.io/${owner_lc}/smriti"
+          tag="${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}"
+          echo "image_prefix=${prefix}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image_prefix }}-api:${{ steps.meta.outputs.image_tag }}
+            ${{ steps.meta.outputs.image_prefix }}-api:latest
+
+      - name: Build and push worker images
+        env:
+          IMAGE_PREFIX: ${{ steps.meta.outputs.image_prefix }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+        run: |
+          IFS=',' read -ra WORKER_LIST <<< "${WORKERS}"
+          for worker in "${WORKER_LIST[@]}"; do
+            worker="$(echo "$worker" | xargs)"
+            docker build \
+              -f apps/worker.Dockerfile \
+              --build-arg "WORKER=${worker}" \
+              -t "${IMAGE_PREFIX}-${worker}:${IMAGE_TAG}" \
+              -t "${IMAGE_PREFIX}-${worker}:latest" \
+              .
+            docker push "${IMAGE_PREFIX}-${worker}:${IMAGE_TAG}"
+            docker push "${IMAGE_PREFIX}-${worker}:latest"
+          done
+
+  migrate:
+    needs: publish-images
+    if: github.event_name == 'workflow_dispatch' && inputs.run_migrate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: pnpm db:migrate
+
+  deploy-railway:
+    needs: [publish-images, migrate]
+    if: >-
+      always() &&
+      needs.publish-images.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
+      github.event_name == 'workflow_dispatch' &&
+      inputs.deploy_target == 'railway'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Redeploy application services
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
+        run: bash infra/deploy/railway/redeploy.sh
+
+  smoke:
+    needs: [publish-images, migrate, deploy-railway]
+    if: >-
+      always() &&
+      needs.publish-images.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
+      (needs.deploy-railway.result == 'success' || needs.deploy-railway.result == 'skipped') &&
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: E2E smoke test
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: pnpm e2e:smoke
