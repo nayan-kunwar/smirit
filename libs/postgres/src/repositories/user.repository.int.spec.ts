@@ -8,19 +8,16 @@ const enabled = process.env.SMRITI_INTEGRATION === '1' && Boolean(process.env.PO
 
 describe.skipIf(!enabled)('PostgresUserRepository (integration)', () => {
   let db: Db;
-  let pool: { end: () => Promise<void> };
 
   beforeAll(async () => {
     const conn = createDb({ url: process.env.POSTGRES_URL as string });
     db = conn.db;
-    pool = conn.pool;
     await runMigrations(db);
   });
 
   afterAll(async () => {
     if (db) {
       await db.destroy();
-      await pool.end();
     }
   });
 

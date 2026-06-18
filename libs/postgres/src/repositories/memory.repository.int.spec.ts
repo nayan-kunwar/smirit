@@ -14,13 +14,11 @@ const enabled = process.env.SMRITI_INTEGRATION === '1' && Boolean(process.env.PO
 
 describe.skipIf(!enabled)('PostgresMemoryRepository (integration)', () => {
   let db: Db;
-  let pool: { end: () => Promise<void> };
   const userId = uuid();
 
   beforeAll(async () => {
     const conn = createDb({ url: process.env.POSTGRES_URL as string });
     db = conn.db;
-    pool = conn.pool;
     await runMigrations(db);
     await db.insertInto('users').values({ id: userId, name: 'Integration User' }).execute();
   });
@@ -30,7 +28,6 @@ describe.skipIf(!enabled)('PostgresMemoryRepository (integration)', () => {
       await db.deleteFrom('memories').where('user_id', '=', userId).execute();
       await db.deleteFrom('users').where('id', '=', userId).execute();
       await db.destroy();
-      await pool.end();
     }
   });
 
