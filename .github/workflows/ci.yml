@@ -81,10 +81,10 @@ jobs:
         run: docker build -f apps/api/Dockerfile -t smriti-api:ci .
 
       - name: Verify API image module resolution
-        run: docker run --rm smriti-api:ci node --input-type=module -e "import 'reflect-metadata'"
+        run: docker run --rm smriti-api:ci node --input-type=module -e "import 'reflect-metadata'; import 'pino'"
 
       - name: Build embedding-worker image
         run: docker build -f apps/worker.Dockerfile --build-arg WORKER=embedding-worker -t smriti-embedding-worker:ci .
 
       - name: Verify embedding-worker image module resolution
-        run: docker run --rm smriti-embedding-worker:ci node --input-type=module -e "import 'kafkajs'"
+        run: docker run --rm smriti-embedding-worker:ci node --input-type=module -e "import 'kafkajs'; import 'pino'"
