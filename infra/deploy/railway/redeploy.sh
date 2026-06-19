@@ -17,12 +17,12 @@ if [[ -n "${RAILWAY_ENVIRONMENT:-}" ]]; then
 fi
 
 services=(
-  smirti-embedding-worker
-  smirti-importance-worker
-  # smirti-summarizer-worker #deployed on another railway account, so we don't redeploy it here
-  smirti-consolidation-worker
-  smirti-profile-worker
-  # smirti-scheduler #deployed on another railway account, so we don't redeploy it here
+  smriti-embedding-worker
+  smriti-importance-worker
+  # smriti-summarizer-worker #deployed on another railway account, so we don't redeploy it here
+  smriti-consolidation-worker
+  smriti-profile-worker
+  # smriti-scheduler #deployed on another railway account, so we don't redeploy it here
   api
 )
 
