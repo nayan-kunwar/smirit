@@ -122,6 +122,16 @@ jobs:
           KAFKA_BROKERS: ${{ secrets.KAFKA_BROKERS }}
         run: pnpm db:migrate
 
+  debugg:
+    needs: [publish-images, migrate]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "event=${{ github.event_name }}"
+          echo "deploy_target=${{ github.event.inputs.deploy_target }}"
+          echo "migrate_result=${{ needs.migrate.result }}"
+          echo "publish_result=${{ needs.publish-images.result }}"
+
   deploy-railway:
     needs: [publish-images, migrate]
     if: >-
@@ -129,7 +139,7 @@ jobs:
       needs.publish-images.result == 'success' &&
       (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
       github.event_name == 'workflow_dispatch' &&
-      inputs.deploy_target == 'railway'
+      github.event.inputs.deploy_target == 'railway'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
