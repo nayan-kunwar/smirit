@@ -20,7 +20,7 @@ on:
         options:
           - none
           - railway
-        default: none
+        default: railway # TODO: make this dynamic based on the environment
       run_smoke:
         description: Run e2e smoke test against API_URL secret
         type: boolean
